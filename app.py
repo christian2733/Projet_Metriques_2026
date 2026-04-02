@@ -37,7 +37,21 @@ def mongraphique():
 @app.route("/desing")
 def mongraphique():
     return render_template("contact.html")
+    
+@app.get("/data-marseille")
+def api_marseille():
+    url = "https://api.open-meteo.com/v1/forecast?latitude=43.2965&longitude=5.3698&hourly=windspeed_10m"
+    data = requests.get(url).json()
+    
+    times = data["hourly"]["time"]
+    winds = data["hourly"]["windspeed_10m"]
+    
+    result = [{"dt": times[i], "wind": winds[i]} for i in range(len(times))]
+    return jsonify(result)
 
+@app.route("/atelier")
+def page_atelier():
+    return render_template("atelier.html")
 
 
 
