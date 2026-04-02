@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vitesse du Vent - Marseille</title>
+
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        margin: 40px; 
+        background-color: #f4f7f6;
+    }
+    .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 { color: #2c3e50; text-align: center; }
+    #chart { width: 100%; height: 500px; }
+    #status { margin-top: 15px; color: #7f8c8d; font-style: italic; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>💨 Vitesse du vent à Marseille (7 jours)</h1>
+    <div id="chart"></div>
+    <div id="status">Chargement des données en cours...</div>
+  </div>
+
+  <script>
+    // 1. Charger le package corechart
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(init);
+
+    async function init() {
+      try {
+        const rows = await fetchMarseilleData();
+        drawChart(rows);
+      } catch (err) {
+        document.getElementById('status').textContent = "Erreur : " + err.message;
+        console.error(err);
+      }
+    }
+
+    async function fetchMarseilleData() {
+      // Appel de ta route Flask
+      const res = await fetch('/data-marseille');
+      if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+
+      const json = await res.json();
+
+      // Transformation des données pour Google Charts [Date, Valeur]
+      return json.map(item => {
+        return [new Date(item.dt), Number(item.wind)];
+      });
+    }
+
+    function drawChart(rows) {
+      const data = new google.visualization.DataTable();
+      data.addColumn('datetime', 'Temps');
+      data.addColumn('number', 'Vitesse du vent (km/h)');
+      data.addRows(rows);
+
+      const options = {
+        title: 'Évolution de la vitesse du vent',
+        hAxis: { title: 'Date/Heure', format: 'dd/MM HH:mm' },
+        vAxis: { title: 'km/h', minValue: 0 },
+        // Personnalisation du AreaChart
+        colors: ['#2980b9'], 
+        areaOpacity: 0.3,
+        legend: { position: 'bottom' },
+        chartArea: { width: '85%', height: '70%' }
+      };
+
+      // Utilisation de AreaChart au lieu de LineChart
+      const chart = new google.visualization.AreaChart(document.getElementById('chart'));
+      chart.draw(data, options);
+
+      document.getElementById('status').textContent = `Dernière mise à jour : ${new Date().toLocaleString()}`;
+    }
+  </script>
+</body>
+</html>
