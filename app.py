@@ -34,6 +34,24 @@ def api_paris():
 def mongraphique():
     return render_template("graphique.html")
 
+@app.route('/api/precipitations/lille')
+def get_lille_precipitations():
+    # Coordonnées de Lille : Lat 50.6292, Lon 3.0573
+    url = "https://api.open-meteo.com/v1/forecast?latitude=50.6292&longitude=3.0573&current=precipitation&timezone=Europe%2FBerlin"
+    response = requests.get(url)
+    data = response.json()
+    
+    # On extrait la valeur actuelle (en mm)
+    valeur = data.get('current', {}).get('precipitation', 0)
+    return jsonify({"ville": "Lille", "precipitation": valeur, "unite": "mm"})
+
+@app.route('/atelier')
+def atelier():
+    return render_template('atelier.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 # Ne rien mettre après ce commentaire
     
