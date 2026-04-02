@@ -34,6 +34,10 @@ def api_paris():
 def mongraphique():
     return render_template("graphique.html")
 
+@app.route("/desing")
+def mongraphique():
+    return render_template("contact.html")
+
 
 
 
